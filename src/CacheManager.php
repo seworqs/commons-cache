@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Seworqs\Commons\Cache;
 
+
 use Laminas\Cache\Psr\SimpleCache\SimpleCacheDecorator;
 use Laminas\Cache\Storage\Adapter\Memory;
 use Laminas\Cache\Storage\StorageInterface;
-use Psr\SimpleCache\CacheInterface;
+use Psr\SimpleCache\CacheInterface as SimpleCacheInterface;
 
 class CacheManager implements CacheManagerInterface
 {
-    /** @var array<string, CacheInterface> */
+    /** @var array<string, SimpleCacheInterface> */
     private array $caches = [];
 
     public function __construct(
@@ -19,13 +20,13 @@ class CacheManager implements CacheManagerInterface
         private AdapterFactory $adapterFactory
     ) {}
 
-    public function get(string $namespace = 'default'): CacheInterface
+    public function get(string $namespace = 'default'): SimpleCacheInterface
     {
         if (isset($this->caches[$namespace])) {
             return $this->caches[$namespace];
         }
 
-        if (!isset($this->namespaces['default'])) {
+        if (! isset($this->namespaces['default'])) {
             $this->namespaces['default'] = [
                 'adapter' => Memory::class,
                 'options' => [],
