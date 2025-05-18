@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Seworqs\Commons\Cache;
 
 use Laminas\Cache\Storage\Adapter\Memory;
-use Psr\Container\ContainerInterface;
 use Laminas\Cache\Service\StorageAdapterFactoryInterface;
+use Psr\Container\ContainerInterface;
 
 class CacheManagerFactory
 {

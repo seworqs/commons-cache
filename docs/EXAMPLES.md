@@ -55,6 +55,39 @@ $value = $cache->get('foo'); // 'bar'
     ]
     ```
 
+## Clear a specific namespace
+
+```php
+use Seworqs\Commons\Cache\CacheManagerFactory;
+
+$manager = CacheManagerFactory::createStandAlone([
+    'namespaces' => [
+        'default' => ['adapter' => 'memory', 'ttl' => 3600],
+        'menu'    => ['adapter' => 'memory', 'ttl' => 300],
+    ],
+]);
+
+$manager->clear('menu');
+```
+
+## Clear all namespaces
+
+```php
+$manager->clearAll();
+```
+
+## List configured namespace keys
+
+```php
+$keys = $manager->getConfiguredNamespaceKeys(); // ['default', 'menu']
+```
+
+## Check which namespaces are active
+
+```php
+$active = array_keys($manager->getAllActive()); // e.g. ['default']
+```
+
 ## Usage in Laminas Environment
 Register the cache manager as a service using a factory:
 

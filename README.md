@@ -1,4 +1,4 @@
-# SEworqs Commons Cache 
+# SEworqs Commons Cache
 
 A lightweight PSR-16 cache manager with multi-namespace support, configurable adapters, and TTL handling.
 
@@ -7,7 +7,7 @@ A lightweight PSR-16 cache manager with multi-namespace support, configurable ad
 composer require seworqs/commons-cache
 ```
 ## Usage
-TODO
+
 ```php
 use Seworqs\Commons\Cache\CacheManagerFactory;
 
@@ -32,6 +32,23 @@ $cache->set('foo', 'bar');
 $value = $cache->get('foo'); // 'bar'
 ```
 > The default namespace is automatically configured with the Memory adapter if not explicitly provided.
+
+## Namespace Management
+
+In addition to standard PSR-16 methods, the cache manager supports multiple named cache namespaces with configurable adapters and TTL settings. You can also clear specific namespaces or all namespaces at once.
+
+```php
+// Clear a specific namespace
+$manager->clear('menu');
+
+// Clear all configured namespaces
+$manager->clearAll();
+
+// List all configured namespaces (regardless of whether they've been used yet)
+$namespaces = $manager->getConfiguredNamespaceKeys(); // ['default', 'menu']
+```
+
+> Note: Namespaces are loaded lazily — only when accessed via `get($namespace)`.
 
 > [More examples](docs/Examples.md)
 

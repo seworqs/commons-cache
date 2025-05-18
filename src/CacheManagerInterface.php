@@ -8,5 +8,20 @@ use Psr\SimpleCache\CacheInterface as SimpleCacheInterface;
 
 interface CacheManagerInterface
 {
-    public function get(string $namespace = 'default'): SimpleCacheInterface;
+    public function getNamespace(string $namespace = 'default'): SimpleCacheInterface;
+
+    /**
+     * Returns all loaded namespace cache instances.
+     *
+     * @return array<string, CacheInterface>
+     */
+    public function getAllLoadedNamespaces(): array;
+
+    public function getAllConfiguredNamespaceKeys(): array;
+
+    public function getAllConfiguredNamespaces(): array;
+
+    public function clearNamespace(string $namespace): void;
+
+    public function clearAllConfiguredNamespaces(): void;
 }
