@@ -1,17 +1,21 @@
 {
   "name": "seworqs/commons-cache",
-  "description": "A lightweight PSR-16 cache manager with multi-namespace support, configurable adapters, and TTL handling.",
+  "description": "A lightweight PSR-16 cache manager with multi-namespace support, configurable Symfony adapters, and TTL handling.",
   "type": "library",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "license": "Apache-2.0",
   "keywords": [
-    "laminas",
     "cache",
+    "psr-16",
+    "symfony",
+    "ttl",
+    "namespace",
+    "laminas",
     "seworqs"
   ],
   "authors": [
     {
-      "name": "S.E: Franke",
+      "name": "S.E. Franke",
       "email": "sven.franke@seworqs.eu"
     }
   ],
@@ -27,14 +31,21 @@
   },
   "require": {
     "php": "^8.1",
-    "psr/simple-cache": "^1.0 || ^2.0 || ^3.0",
-    "laminas/laminas-cache": "^3.13.0",
-    "laminas/laminas-cache-storage-adapter-memory": "^2.4.0"
+    "psr/simple-cache": "^3.0",
+    "symfony/cache": "^6.4 || ^7.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^11"
   },
   "scripts": {
     "test": "phpunit"
+  },
+  "suggest": {
+    "laminas/laminas-servicemanager": "For integration with Laminas via CacheManagerFactory"
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-main": "2.0.x-dev"
+    }
   }
 }

@@ -1,65 +1,93 @@
 # SEworqs Commons Cache
 
-A lightweight PSR-16 cache manager with multi-namespace support, configurable adapters, and TTL handling.
+A lightweight PSR-16 cache manager with multi-namespace support, configurable Symfony adapters, and TTL handling.  
+Built on top of [symfony/cache](https://symfony.com/doc/current/components/cache.html), fully compatible with PHP 8.1+ and PSR standards.
+
+---
 
 ## Installation
+
 ```bash
 composer require seworqs/commons-cache
 ```
-## Usage
+
+---
+
+## Basic Usage (stand-alone)
 
 ```php
 use Seworqs\Commons\Cache\CacheManagerFactory;
 
-/** Create the cache manager with optional namespace configurations */
-$manager = CacheManagerFactory::createStandAlone([
+$config = [
     'namespaces' => [
         'default' => [
-            'adapter' => 'memory',
-            'options' => [],
+            'adapter' => 'array',
             'ttl' => 3600,
         ],
         'menu' => [
-            'adapter' => 'memory',
+            'adapter' => 'filesystem',
             'ttl' => 600,
+            'directory' => __DIR__ . '/cache/menu',
         ],
     ],
-]);
+];
 
-/** Get the default cache (PSR-16) */
-$cache = $manager->get(); // or $manager->get('default')
+$manager = CacheManagerFactory::create($config);
+
+$cache = $manager->getNamespace();
 $cache->set('foo', 'bar');
-$value = $cache->get('foo'); // 'bar'
+$value = $cache->get('foo');
 ```
-> The default namespace is automatically configured with the Memory adapter if not explicitly provided.
 
-## Namespace Management
+---
 
-In addition to standard PSR-16 methods, the cache manager supports multiple named cache namespaces with configurable adapters and TTL settings. You can also clear specific namespaces or all namespaces at once.
+## Adapter Options
+
+You may use:
+
+### ✅ Aliases:
+- `'array'`
+- `'filesystem'`
+- `'null'`
+
+### ✅ Full class names:
+```php
+'adapter' => Symfony\Component\Cache\Adapter\PhpFilesAdapter::class
+```
+
+### ✅ Ready-to-use instances:
+```php
+'adapter' => new Symfony\Component\Cache\Adapter\RedisAdapter($redisClient, 'namespace', 600)
+```
+
+Other adapters like Redis, Memcached, or PDO can be used by providing their full class name and handling construction yourself.
+
+---
+
+## Laminas Integration
 
 ```php
-// Clear a specific namespace
-$manager->clear('menu');
-
-// Clear all configured namespaces
-$manager->clearAll();
-
-// List all configured namespaces (regardless of whether they've been used yet)
-$namespaces = $manager->getConfiguredNamespaceKeys(); // ['default', 'menu']
+'factories' => [
+    Seworqs\Commons\Cache\CacheManagerInterface::class => Seworqs\Commons\Cache\CacheManagerFactory::class,
+],
 ```
 
-> Note: Namespaces are loaded lazily — only when accessed via `get($namespace)`.
+Use via dependency injection:
+```php
+public function __construct(private CacheManagerInterface $cacheManager) {}
+```
 
-> [More examples](docs/Examples.md)
+---
 
-## Features
+## Testing
 
-- [X] Multiple named namespaces (each with its own adapter, options, and TTL)
-- [X] Merging of namespace-specific config with a shared default
-- [X] Standalone usage or integration into Laminas via service factories
-- [X] Adapters like memory, filesystem, APCu, Redis, and more — using Laminas Cache v4
+```bash
+composer test
+```
 
-> See our [examples](docs/Examples.md)
+Runs PHPUnit using in-memory adapters.
+
+---
 
 ## License
 Apache-2.0, see [LICENSE](./LICENSE)

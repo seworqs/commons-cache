@@ -4,80 +4,93 @@ declare(strict_types=1);
 
 namespace Seworqs\Commons\Cache;
 
-use Laminas\Cache\Psr\SimpleCache\SimpleCacheDecorator;
-use Laminas\Cache\Storage\Adapter\Memory;
-use Laminas\Cache\Storage\StorageInterface;
 use Psr\SimpleCache\CacheInterface as SimpleCacheInterface;
 
+/**
+ * CacheManager providing PSR-16 caches per namespace using Symfony adapters.
+ */
 class CacheManager implements CacheManagerInterface
 {
-    /** @var array<string, SimpleCacheInterface> */
-    private array $caches = [];
+    protected SimpleCacheInterface $defaultAdapter;
 
-    public function __construct(
-        private array $namespaces,
-        private AdapterFactory $adapterFactory
-    ) {
+    /** @var array<string, array> */
+    protected array $configuredNamespaces;
+
+    /** @var array<string, SimpleCacheInterface> */
+    protected array $instances = [];
+
+    /**
+     * @param SimpleCacheInterface $defaultAdapter Default fallback adapter if a namespace has no specific config.
+     * @param array<string, array> $configuredNamespaces Adapter config per namespace (optional).
+     */
+    public function __construct(SimpleCacheInterface $defaultAdapter, array $configuredNamespaces = [])
+    {
+        $this->defaultAdapter = $defaultAdapter;
+        $this->configuredNamespaces = $configuredNamespaces;
     }
 
+    /**
+     * Get or create a PSR-16 cache instance for a given namespace.
+     *
+     * @param string $namespace
+     * @return SimpleCacheInterface
+     */
     public function getNamespace(string $namespace = 'default'): SimpleCacheInterface
     {
-        if (isset($this->caches[$namespace])) {
-            return $this->caches[$namespace];
+        if (isset($this->instances[$namespace])) {
+            return $this->instances[$namespace];
         }
 
-        if (! isset($this->namespaces['default'])) {
-            $this->namespaces['default'] = [
-                'adapter' => Memory::class,
-                'options' => [],
-                'ttl'     => 3600,
-            ];
-        }
+        $config = $this->configuredNamespaces[$namespace] ?? [];
+        $config['namespace'] = $namespace;
 
-        $base = $this->namespaces['default'];
-        $override = $namespace !== 'default' ? $this->namespaces[$namespace] ?? [] : [];
-        $config = array_replace_recursive($base, $override);
+        $adapter = isset($config['adapter'])
+            ? AdapterFactory::createSimpleCacheInterface($config)
+            : $this->defaultAdapter;
 
-        $adapter = $config['adapter'];
-        $options = $config['options'] ?? [];
-        $ttl     = $config['ttl'] ?? 3600;
-
-        /** @var StorageInterface $storage */
-        $storage = $this->adapterFactory->create($adapter, $options);
-        $storage->setOptions(['ttl' => $ttl]);
-
-        $psr16 = new SimpleCacheDecorator($storage);
-        return $this->caches[$namespace] = $psr16;
+        $this->instances[$namespace] = $adapter;
+        return $adapter;
     }
+
+    /**
+     * @return array<string, SimpleCacheInterface>
+     */
     public function getAllLoadedNamespaces(): array
     {
-        return $this->caches;
+        return $this->instances;
     }
 
+    /**
+     * @return string[]
+     */
     public function getAllConfiguredNamespaceKeys(): array
     {
-        return array_keys($this->namespaces);
+        return array_keys($this->configuredNamespaces);
     }
 
+    /**
+     * @return array<string, array>
+     */
     public function getAllConfiguredNamespaces(): array
     {
-        return $this->namespaces;
+        return $this->configuredNamespaces;
     }
 
+    /**
+     * Clears the given namespace if it has been initialized.
+     */
     public function clearNamespace(string $namespace): void
     {
-        if (! isset($this->namespaces[$namespace]) && $namespace !== 'default') {
-            throw new \InvalidArgumentException("Unknown namespace: $namespace");
-        }
-        $this->get($namespace)->clear();
+        $this->getNamespace($namespace)->clear();
     }
 
+    /**
+     * Clears all configured namespaces.
+     */
     public function clearAllConfiguredNamespaces(): void
     {
-        $caches = $this->getAllConfigured();
-        foreach ($caches as $namespace) {
-            $cache = $this->get($namespace);
-            $cache->clear();
+        foreach ($this->getAllConfiguredNamespaceKeys() as $ns) {
+            $this->clearNamespace($ns);
         }
     }
 }

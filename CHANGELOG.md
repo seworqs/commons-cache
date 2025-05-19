@@ -1,6 +1,19 @@
-# CHANGELOG - SEworqs Laminas Core
+# CHANGELOG - SEworqs Commons Cache
 
-## v1.1.0
+## v2.0.0
+Fully rewritten on top of `symfony_cache`.
 
-## v1.0.0
-Initial release.
+### Added
+- New `CacheManager` with PSR-16 per-namespace cache support
+- Stand-alone + Laminas-compatible `CacheManagerFactory`
+- TTL handling per adapter
+- ArrayAdapter and FilesystemAdapter support
+
+### Changed
+- Removed Laminas cache support
+- Removed `NamespaceCacheService`
+- Removed custom `CacheInterface` in favor of PSR-16
+
+### Fixed
+- TTL expiry tests added
+- Namespace isolation guaranteed across adapters
